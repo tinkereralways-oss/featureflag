@@ -1,0 +1,54 @@
+databaseChangeLog:
+  - changeSet:
+      id: 003-create-flag-environments
+      author: dev-1
+      changes:
+        - createTable:
+            tableName: flag_environments
+            columns:
+              - column:
+                  name: id
+                  type: NUMBER
+                  defaultValueSequenceNext: flag_env_seq
+                  constraints:
+                    primaryKey: true
+                    nullable: false
+              - column:
+                  name: flag_id
+                  type: VARCHAR2(36)
+                  constraints:
+                    nullable: false
+              - column:
+                  name: environment
+                  type: VARCHAR2(50)
+                  constraints:
+                    nullable: false
+              - column:
+                  name: enabled
+                  type: NUMBER(1)
+                  defaultValueNumeric: 0
+              - column:
+                  name: rollout_percentage
+                  type: NUMBER
+                  defaultValueNumeric: 100
+              - column:
+                  name: created_at
+                  type: TIMESTAMP WITH TIME ZONE
+                  defaultValueComputed: SYSTIMESTAMP
+              - column:
+                  name: updated_at
+                  type: TIMESTAMP WITH TIME ZONE
+                  defaultValueComputed: SYSTIMESTAMP
+        - addForeignKeyConstraint:
+            baseTableName: flag_environments
+            baseColumnNames: flag_id
+            referencedTableName: feature_flags
+            referencedColumnNames: id
+            constraintName: fk_flag_env_flag_id
+        - addUniqueConstraint:
+            tableName: flag_environments
+            columnNames: flag_id, environment
+            constraintName: uk_flag_env_flag_id_env
+      rollback:
+        - dropTable:
+            tableName: flag_environments

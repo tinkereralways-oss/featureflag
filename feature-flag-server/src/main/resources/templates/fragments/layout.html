@@ -1,0 +1,18 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head th:fragment="head(title)">
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title th:text="${title}">Feature Flag Dashboard</title>
+    <link rel="stylesheet" th:href="@{/css/dashboard.css}">
+</head>
+<body>
+<nav th:fragment="nav">
+    <a class="brand" th:href="@{/dashboard}">Feature Flags</a>
+    <a th:href="@{/dashboard}" th:classappend="${#strings.startsWith(currentPath, '/dashboard/flags') or currentPath == '/dashboard'} ? 'active'">Flags</a>
+    <a th:href="@{/dashboard/instances}" th:classappend="${#strings.startsWith(currentPath, '/dashboard/instances')} ? 'active'">Instances</a>
+    <a th:href="@{/dashboard/activations}" th:classappend="${#strings.startsWith(currentPath, '/dashboard/activations')} ? 'active'">Activations</a>
+    <a th:href="@{/dashboard/audit}" th:classappend="${#strings.startsWith(currentPath, '/dashboard/audit')} ? 'active'">Audit Log</a>
+</nav>
+</body>
+</html>

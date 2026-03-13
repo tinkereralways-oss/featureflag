@@ -1,0 +1,9 @@
+spring:
+  datasource:
+    url: jdbc:tc:oracle:21-slim:///XEPDB1
+    driver-class-name: org.testcontainers.jdbc.ContainerDatabaseDriver
+  jpa:
+    hibernate:
+      ddl-auto: none
+  kafka:
+    bootstrap-servers: ${spring.embedded.kafka.brokers:localhost:9092}

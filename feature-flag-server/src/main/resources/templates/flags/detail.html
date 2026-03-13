@@ -1,0 +1,140 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head th:replace="~{fragments/layout :: head('Flag Detail - Feature Flag Dashboard')}"></head>
+<body>
+<nav th:replace="~{fragments/layout :: nav}"></nav>
+<div class="container">
+    <div class="page-header">
+        <h1>
+            <a th:href="@{/dashboard}" style="color: #888; text-decoration: none;">&larr;</a>
+            <span th:text="${flag.flagKey()}"></span>
+        </h1>
+        <div style="display: flex; align-items: center; gap: 0.5rem;">
+            <span class="badge"
+                  th:classappend="'badge-' + ${#strings.toLowerCase(flag.lifecycleState())}"
+                  th:text="${flag.lifecycleState()}"
+                  style="font-size: 0.9rem; padding: 0.3rem 0.8rem;"></span>
+            <a th:if="${flag.lifecycleState() != 'ARCHIVED'}" th:href="@{/dashboard/flags/{key}/edit(key=${flag.flagKey()})}" class="btn btn-secondary btn-sm">Edit</a>
+        </div>
+    </div>
+
+    <div th:replace="~{fragments/flash :: messages}"></div>
+
+    <!-- Flag Details -->
+    <div class="card">
+        <h2>Details</h2>
+        <div class="detail-grid">
+            <div class="detail-item">
+                <div class="label">Name</div>
+                <div class="value" th:text="${flag.name()}"></div>
+            </div>
+            <div class="detail-item">
+                <div class="label">Owner</div>
+                <div class="value" th:text="${flag.owner() ?: 'N/A'}"></div>
+            </div>
+            <div class="detail-item">
+                <div class="label">Stale After</div>
+                <div class="value" th:text="${flag.staleAfterDays()} + ' days'"></div>
+            </div>
+            <div class="detail-item">
+                <div class="label">Created</div>
+                <div class="value timestamp" th:text="${@fmt.instant(flag.createdAt())}"></div>
+            </div>
+            <div class="detail-item">
+                <div class="label">Last Updated</div>
+                <div class="value timestamp" th:text="${@fmt.instant(flag.updatedAt())}"></div>
+            </div>
+            <div class="detail-item">
+                <div class="label">ID</div>
+                <div class="value timestamp" th:text="${flag.id()}"></div>
+            </div>
+        </div>
+        <div th:if="${flag.description() != null}" style="margin-top: 1rem;">
+            <div style="font-size: 0.75rem; color: #888; text-transform: uppercase; margin-bottom: 0.25rem;">Description</div>
+            <div th:text="${flag.description()}"></div>
+        </div>
+    </div>
+
+    <!-- Lifecycle Transitions -->
+    <div class="card" th:if="${flag.lifecycleState() != 'ARCHIVED'}">
+        <h2>Lifecycle Transitions</h2>
+        <div style="display: flex; gap: 0.5rem; flex-wrap: wrap;">
+            <!-- CREATED -> ACTIVE, ARCHIVED -->
+            <form th:if="${flag.lifecycleState() == 'CREATED'}" th:action="@{/dashboard/flags/{key}/lifecycle(key=${flag.flagKey()})}" method="post" style="display: inline;">
+                <input type="hidden" name="targetState" value="ACTIVE">
+                <button type="submit" class="btn btn-success btn-sm">Activate</button>
+            </form>
+            <form th:if="${flag.lifecycleState() == 'CREATED'}" th:action="@{/dashboard/flags/{key}/lifecycle(key=${flag.flagKey()})}" method="post" style="display: inline;">
+                <input type="hidden" name="targetState" value="ARCHIVED">
+                <button type="submit" class="btn btn-secondary btn-sm">Archive</button>
+            </form>
+
+            <!-- ACTIVE -> RETIRED, ARCHIVED -->
+            <form th:if="${flag.lifecycleState() == 'ACTIVE'}" th:action="@{/dashboard/flags/{key}/lifecycle(key=${flag.flagKey()})}" method="post" style="display: inline;">
+                <input type="hidden" name="targetState" value="RETIRED">
+                <button type="submit" class="btn btn-danger btn-sm">Retire</button>
+            </form>
+            <form th:if="${flag.lifecycleState() == 'ACTIVE'}" th:action="@{/dashboard/flags/{key}/lifecycle(key=${flag.flagKey()})}" method="post" style="display: inline;">
+                <input type="hidden" name="targetState" value="ARCHIVED">
+                <button type="submit" class="btn btn-secondary btn-sm">Archive</button>
+            </form>
+
+            <!-- RETIRED -> ACTIVE, ARCHIVED -->
+            <form th:if="${flag.lifecycleState() == 'RETIRED'}" th:action="@{/dashboard/flags/{key}/lifecycle(key=${flag.flagKey()})}" method="post" style="display: inline;">
+                <input type="hidden" name="targetState" value="ACTIVE">
+                <button type="submit" class="btn btn-success btn-sm">Re-activate</button>
+            </form>
+            <form th:if="${flag.lifecycleState() == 'RETIRED'}" th:action="@{/dashboard/flags/{key}/lifecycle(key=${flag.flagKey()})}" method="post" style="display: inline;">
+                <input type="hidden" name="targetState" value="ARCHIVED">
+                <button type="submit" class="btn btn-secondary btn-sm">Archive</button>
+            </form>
+        </div>
+    </div>
+
+    <!-- Environment Toggles -->
+    <div th:replace="~{flags/detail-actions :: environmentToggles(${flag})}"></div>
+
+    <!-- Add Environment -->
+    <div th:replace="~{flags/detail-actions :: addEnvironment(${flag})}"></div>
+
+    <!-- Lifecycle Transition History -->
+    <div class="card">
+        <h2>Lifecycle History</h2>
+        <table th:if="${!transitionHistory.isEmpty()}">
+            <thead>
+            <tr>
+                <th>From</th>
+                <th>To</th>
+                <th>Reason</th>
+                <th>By</th>
+                <th>When</th>
+            </tr>
+            </thead>
+            <tbody>
+            <tr th:each="t : ${transitionHistory}">
+                <td>
+                    <span class="badge"
+                          th:classappend="'badge-' + ${#strings.toLowerCase(t.fromState())}"
+                          th:text="${t.fromState()}"></span>
+                </td>
+                <td>
+                    <span class="badge"
+                          th:classappend="'badge-' + ${#strings.toLowerCase(t.toState())}"
+                          th:text="${t.toState()}"></span>
+                </td>
+                <td th:text="${t.reason() ?: '-'}"></td>
+                <td th:text="${t.transitionedBy()}"></td>
+                <td class="timestamp" th:text="${@fmt.instant(t.transitionedAt())}"></td>
+            </tr>
+            </tbody>
+        </table>
+        <div th:if="${transitionHistory.isEmpty()}" class="empty-state" style="padding: 1.5rem;">
+            <p>No lifecycle transitions recorded.</p>
+        </div>
+    </div>
+
+    <!-- Delete / Archive -->
+    <div th:replace="~{flags/detail-actions :: deleteButton(${flag})}"></div>
+</div>
+</body>
+</html>

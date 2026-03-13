@@ -1,0 +1,67 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head th:replace="~{fragments/layout :: head('Audit Log - Feature Flag Dashboard')}"></head>
+<body>
+<nav th:replace="~{fragments/layout :: nav}"></nav>
+<div class="container">
+    <div class="page-header">
+        <h1>Audit Log</h1>
+        <span class="timestamp" th:text="'Total entries: ' + ${totalElements}"></span>
+    </div>
+
+    <div class="card">
+        <table th:if="${!auditEntries.isEmpty()}">
+            <thead>
+            <tr>
+                <th>ID</th>
+                <th>Flag ID</th>
+                <th>Action</th>
+                <th>Old Value</th>
+                <th>New Value</th>
+                <th>Changed By</th>
+                <th>Metadata</th>
+                <th>When</th>
+            </tr>
+            </thead>
+            <tbody>
+            <tr th:each="entry : ${auditEntries}">
+                <td th:text="${entry.id()}"></td>
+                <td style="font-family: monospace; font-size: 0.8rem;" th:text="${#strings.abbreviate(entry.flagId(), 12)}"></td>
+                <td>
+                    <span class="badge badge-active" th:text="${entry.action()}"></span>
+                </td>
+                <td style="max-width: 200px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;"
+                    th:text="${entry.oldValue() ?: '-'}"
+                    th:title="${entry.oldValue()}"></td>
+                <td style="max-width: 200px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;"
+                    th:text="${entry.newValue() ?: '-'}"
+                    th:title="${entry.newValue()}"></td>
+                <td th:text="${entry.changedBy() ?: '-'}"></td>
+                <td style="max-width: 150px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;"
+                    th:text="${entry.metadata() ?: '-'}"
+                    th:title="${entry.metadata()}"></td>
+                <td class="timestamp" th:text="${@fmt.instant(entry.createdAt())}"></td>
+            </tr>
+            </tbody>
+        </table>
+        <div th:if="${auditEntries.isEmpty()}" class="empty-state">
+            <p>No audit entries.</p>
+        </div>
+
+        <!-- Pagination -->
+        <div class="pagination" th:if="${totalPages > 1}">
+            <a th:if="${currentPage > 0}"
+               th:href="@{/dashboard/audit(page=${currentPage - 1}, size=25)}">&laquo; Prev</a>
+            <th:block th:each="i : ${#numbers.sequence(0, totalPages - 1)}">
+                <span th:if="${i == currentPage}" class="current" th:text="${i + 1}"></span>
+                <a th:if="${i != currentPage}"
+                   th:href="@{/dashboard/audit(page=${i}, size=25)}"
+                   th:text="${i + 1}"></a>
+            </th:block>
+            <a th:if="${currentPage < totalPages - 1}"
+               th:href="@{/dashboard/audit(page=${currentPage + 1}, size=25)}">Next &raquo;</a>
+        </div>
+    </div>
+</div>
+</body>
+</html>

@@ -1,0 +1,42 @@
+databaseChangeLog:
+  - changeSet:
+      id: 008-create-pending-activation-acks
+      author: dev-1
+      changes:
+        - createTable:
+            tableName: pending_activation_acks
+            columns:
+              - column:
+                  name: id
+                  type: NUMBER
+                  defaultValueSequenceNext: activation_ack_seq
+                  constraints:
+                    primaryKey: true
+                    nullable: false
+              - column:
+                  name: activation_id
+                  type: VARCHAR2(36)
+                  constraints:
+                    nullable: false
+              - column:
+                  name: instance_id
+                  type: VARCHAR2(36)
+                  constraints:
+                    nullable: false
+              - column:
+                  name: acked_at
+                  type: TIMESTAMP WITH TIME ZONE
+                  defaultValueComputed: SYSTIMESTAMP
+        - addForeignKeyConstraint:
+            baseTableName: pending_activation_acks
+            baseColumnNames: activation_id
+            referencedTableName: pending_activations
+            referencedColumnNames: id
+            constraintName: fk_act_ack_activation_id
+        - addUniqueConstraint:
+            tableName: pending_activation_acks
+            columnNames: activation_id, instance_id
+            constraintName: uk_act_ack_activation_instance
+      rollback:
+        - dropTable:
+            tableName: pending_activation_acks

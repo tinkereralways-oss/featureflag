@@ -1,0 +1,23 @@
+spring:
+  application:
+    name: feature-flag-sample-consumer
+  kafka:
+    bootstrap-servers: ${KAFKA_BOOTSTRAP_SERVERS:localhost:9092}
+    consumer:
+      auto-offset-reset: latest
+      key-deserializer: org.apache.kafka.common.serialization.StringDeserializer
+      value-deserializer: org.springframework.kafka.support.serializer.JsonDeserializer
+      properties:
+        spring.json.trusted.packages: com.paymentplatform.*
+
+server:
+  port: 8081
+
+feature-flag:
+  server-url: ${FLAG_SERVER_URL:http://localhost:8080}
+  service-name: sample-consumer
+  environment: ${FLAG_ENVIRONMENT:default}
+  heartbeat-interval-seconds: 15
+  kafka:
+    bootstrap-servers: ${KAFKA_BOOTSTRAP_SERVERS:localhost:9092}
+    topic: feature-flag-events

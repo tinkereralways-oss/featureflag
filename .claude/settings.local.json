@@ -1,0 +1,11 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(mvn test:*)",
+      "Bash(mvn compile:*)",
+      "Bash(docker-compose stop:*)",
+      "mcp__notion__notion-update-page",
+      "Bash(docker compose:*)"
+    ]
+  }
+}

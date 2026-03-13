@@ -1,0 +1,49 @@
+databaseChangeLog:
+  - changeSet:
+      id: 006-create-flag-transitions
+      author: dev-1
+      changes:
+        - createTable:
+            tableName: flag_transitions
+            columns:
+              - column:
+                  name: id
+                  type: NUMBER
+                  defaultValueSequenceNext: flag_transition_seq
+                  constraints:
+                    primaryKey: true
+                    nullable: false
+              - column:
+                  name: flag_id
+                  type: VARCHAR2(36)
+                  constraints:
+                    nullable: false
+              - column:
+                  name: from_state
+                  type: VARCHAR2(20)
+                  constraints:
+                    nullable: false
+              - column:
+                  name: to_state
+                  type: VARCHAR2(20)
+                  constraints:
+                    nullable: false
+              - column:
+                  name: reason
+                  type: VARCHAR2(4000)
+              - column:
+                  name: transitioned_by
+                  type: VARCHAR2(255)
+              - column:
+                  name: created_at
+                  type: TIMESTAMP WITH TIME ZONE
+                  defaultValueComputed: SYSTIMESTAMP
+        - addForeignKeyConstraint:
+            baseTableName: flag_transitions
+            baseColumnNames: flag_id
+            referencedTableName: feature_flags
+            referencedColumnNames: id
+            constraintName: fk_flag_transition_flag_id
+      rollback:
+        - dropTable:
+            tableName: flag_transitions

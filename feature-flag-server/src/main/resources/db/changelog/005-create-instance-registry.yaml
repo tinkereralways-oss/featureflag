@@ -1,0 +1,51 @@
+databaseChangeLog:
+  - changeSet:
+      id: 005-create-instance-registry
+      author: dev-1
+      changes:
+        - createTable:
+            tableName: instance_registry
+            columns:
+              - column:
+                  name: instance_id
+                  type: VARCHAR2(36)
+                  constraints:
+                    primaryKey: true
+                    nullable: false
+              - column:
+                  name: service_name
+                  type: VARCHAR2(255)
+                  constraints:
+                    nullable: false
+              - column:
+                  name: host_address
+                  type: VARCHAR2(255)
+              - column:
+                  name: port
+                  type: NUMBER
+              - column:
+                  name: health_status
+                  type: VARCHAR2(20)
+                  defaultValue: HEALTHY
+              - column:
+                  name: sdk_version
+                  type: VARCHAR2(50)
+              - column:
+                  name: last_heartbeat
+                  type: TIMESTAMP WITH TIME ZONE
+                  defaultValueComputed: SYSTIMESTAMP
+              - column:
+                  name: registered_at
+                  type: TIMESTAMP WITH TIME ZONE
+                  defaultValueComputed: SYSTIMESTAMP
+        - createIndex:
+            indexName: idx_instance_heartbeat_status
+            tableName: instance_registry
+            columns:
+              - column:
+                  name: health_status
+              - column:
+                  name: last_heartbeat
+      rollback:
+        - dropTable:
+            tableName: instance_registry

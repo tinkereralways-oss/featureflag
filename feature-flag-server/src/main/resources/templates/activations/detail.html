@@ -1,0 +1,91 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head th:replace="~{fragments/layout :: head('Activation Detail - Feature Flag Dashboard')}"></head>
+<body>
+<nav th:replace="~{fragments/layout :: nav}"></nav>
+<div class="container">
+    <div class="page-header">
+        <h1>
+            <a th:href="@{/dashboard/activations}" style="color: #888; text-decoration: none;">&larr;</a>
+            Activation Detail
+        </h1>
+        <span class="badge"
+              th:classappend="'badge-' + ${#strings.toLowerCase(activation.status())}"
+              th:text="${activation.status()}"
+              style="font-size: 0.9rem; padding: 0.3rem 0.8rem;"></span>
+    </div>
+
+    <div class="card">
+        <h2>Activation Info</h2>
+        <div class="detail-grid">
+            <div class="detail-item">
+                <div class="label">Activation ID</div>
+                <div class="value" style="font-family: monospace; font-size: 0.8rem;" th:text="${activation.id()}"></div>
+            </div>
+            <div class="detail-item">
+                <div class="label">Flag ID</div>
+                <div class="value" style="font-family: monospace; font-size: 0.8rem;" th:text="${activation.flagId()}"></div>
+            </div>
+            <div class="detail-item">
+                <div class="label">Environment</div>
+                <div class="value" th:text="${activation.environment()}"></div>
+            </div>
+            <div class="detail-item">
+                <div class="label">New State</div>
+                <div class="value">
+                    <span class="badge"
+                          th:classappend="${activation.newEnabled()} ? 'badge-on' : 'badge-off'"
+                          th:text="${activation.newEnabled()} ? 'ON' : 'OFF'"></span>
+                </div>
+            </div>
+            <div class="detail-item">
+                <div class="label">Timeout</div>
+                <div class="value" th:text="${activation.timeoutSeconds()} + ' seconds'"></div>
+            </div>
+            <div class="detail-item">
+                <div class="label">Created</div>
+                <div class="value timestamp" th:text="${@fmt.instant(activation.createdAt())}"></div>
+            </div>
+            <div class="detail-item" th:if="${activation.completedAt() != null}">
+                <div class="label">Completed</div>
+                <div class="value timestamp" th:text="${@fmt.instant(activation.completedAt())}"></div>
+            </div>
+        </div>
+    </div>
+
+    <div class="card">
+        <h2>ACK Progress</h2>
+        <div style="margin-bottom: 1rem;">
+            <div style="display: flex; align-items: center; gap: 1rem; margin-bottom: 0.5rem;">
+                <div class="progress" style="flex: 1;">
+                    <div class="progress-bar"
+                         th:style="'width:' + ${activation.totalInstances() > 0 ? (activation.ackedInstances() * 100 / activation.totalInstances()) : 0} + '%'"></div>
+                </div>
+                <span style="font-weight: 600;" th:text="${activation.ackedInstances()} + ' / ' + ${activation.totalInstances()} + ' instances'"></span>
+            </div>
+        </div>
+
+        <div th:if="${!activation.ackedInstanceIds().isEmpty()}">
+            <h3 style="font-size: 0.9rem; margin-bottom: 0.5rem; color: #666;">Acknowledged Instances</h3>
+            <table>
+                <thead>
+                <tr>
+                    <th>Instance ID</th>
+                </tr>
+                </thead>
+                <tbody>
+                <tr th:each="instId : ${activation.ackedInstanceIds()}">
+                    <td style="font-family: monospace; font-size: 0.85rem;" th:text="${instId}"></td>
+                </tr>
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+
+<script th:if="${activation.status() == 'PREPARING' or activation.status() == 'PENDING'}">
+    // Auto-refresh while activation is in progress
+    setTimeout(function() { location.reload(); }, 3000);
+</script>
+</body>
+</html>

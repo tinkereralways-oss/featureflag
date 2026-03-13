@@ -1,0 +1,72 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head th:replace="~{fragments/layout :: head('Create Flag - Feature Flag Dashboard')}"></head>
+<body>
+<nav th:replace="~{fragments/layout :: nav}"></nav>
+<div class="container">
+    <div class="page-header">
+        <h1>
+            <a th:href="@{/dashboard}" style="color: #888; text-decoration: none;">&larr;</a>
+            Create New Flag
+        </h1>
+    </div>
+
+    <div th:replace="~{fragments/flash :: messages}"></div>
+
+    <div th:if="${validationErrors}" style="margin-bottom: 1rem;">
+        <div class="alert alert-danger">
+            <ul style="margin: 0; padding-left: 1.25rem;">
+                <li th:each="error : ${validationErrors}" th:text="${error}"></li>
+            </ul>
+        </div>
+    </div>
+
+    <div class="card">
+        <form th:action="@{/dashboard/flags}" method="post">
+            <div class="form-group">
+                <label for="flagKey">Flag Key *</label>
+                <input type="text" id="flagKey" name="flagKey" th:value="${formFlagKey}" required
+                       pattern="^[a-z0-9-]+$" placeholder="my-feature-flag"
+                       title="Lowercase letters, numbers, and hyphens only">
+            </div>
+
+            <div class="form-group">
+                <label for="name">Name *</label>
+                <input type="text" id="name" name="name" th:value="${formName}" required
+                       placeholder="My Feature Flag">
+            </div>
+
+            <div class="form-group">
+                <label for="description">Description</label>
+                <textarea id="description" name="description" th:text="${formDescription}"
+                          placeholder="Describe the purpose of this flag..."></textarea>
+            </div>
+
+            <div class="form-group">
+                <label for="owner">Owner</label>
+                <input type="text" id="owner" name="owner" th:value="${formOwner}"
+                       placeholder="team-name or user@example.com">
+            </div>
+
+            <div class="form-group">
+                <label for="staleAfterDays">Stale After (days)</label>
+                <input type="number" id="staleAfterDays" name="staleAfterDays"
+                       th:value="${formStaleAfterDays ?: 90}" min="1" style="width: 150px;">
+            </div>
+
+            <div class="form-group">
+                <label for="environments">Environments</label>
+                <input type="text" id="environments" name="environments"
+                       th:value="${formEnvironments ?: 'default'}" placeholder="default">
+                <div style="color: #888; font-size: 0.8rem; margin-top: 0.25rem;">Comma-separated list of environment names (e.g. default, staging, production)</div>
+            </div>
+
+            <div style="display: flex; gap: 0.5rem; margin-top: 1.5rem;">
+                <button type="submit" class="btn btn-primary">Create Flag</button>
+                <a th:href="@{/dashboard}" class="btn btn-secondary">Cancel</a>
+            </div>
+        </form>
+    </div>
+</div>
+</body>
+</html>

@@ -1,0 +1,42 @@
+spring:
+  datasource:
+    url: jdbc:oracle:thin:@localhost:1521/XEPDB1
+    username: feature_flag
+    password: feature_flag
+    driver-class-name: oracle.jdbc.OracleDriver
+  jpa:
+    hibernate:
+      ddl-auto: none
+    properties:
+      hibernate:
+        dialect: org.hibernate.dialect.OracleDialect
+        format_sql: true
+    show-sql: false
+  liquibase:
+    change-log: classpath:db/changelog/db.changelog-master.yaml
+  kafka:
+    bootstrap-servers: localhost:9092
+    producer:
+      key-serializer: org.apache.kafka.common.serialization.StringSerializer
+      value-serializer: org.springframework.kafka.support.serializer.JsonSerializer
+    consumer:
+      auto-offset-reset: earliest
+      key-deserializer: org.apache.kafka.common.serialization.StringDeserializer
+      value-deserializer: org.springframework.kafka.support.serializer.JsonDeserializer
+      properties:
+        spring.json.trusted.packages: com.paymentplatform.*
+
+server:
+  port: 8080
+
+feature-flag:
+  activation-timeout-seconds: 60
+  activation-timeout-check-interval-ms: 5000
+  heartbeat-interval-seconds: 15
+  unhealthy-threshold-seconds: 45
+  staleness-check-cron: "0 0 2 * * *"
+  default-stale-after-days: 90
+  kafka:
+    topic: feature-flag-events
+    partitions: 3
+    replication-factor: 1

@@ -1,0 +1,30 @@
+databaseChangeLog:
+  - changeSet:
+      id: 001-create-sequences
+      author: dev-1
+      changes:
+        - createSequence:
+            sequenceName: flag_env_seq
+            startValue: 1
+            incrementBy: 1
+        - createSequence:
+            sequenceName: audit_log_seq
+            startValue: 1
+            incrementBy: 1
+        - createSequence:
+            sequenceName: flag_transition_seq
+            startValue: 1
+            incrementBy: 1
+        - createSequence:
+            sequenceName: activation_ack_seq
+            startValue: 1
+            incrementBy: 1
+      rollback:
+        - sql:
+            sql: DROP SEQUENCE flag_env_seq
+        - sql:
+            sql: DROP SEQUENCE audit_log_seq
+        - sql:
+            sql: DROP SEQUENCE flag_transition_seq
+        - sql:
+            sql: DROP SEQUENCE activation_ack_seq

@@ -1,0 +1,86 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head th:replace="~{fragments/layout :: head('Flags - Feature Flag Dashboard')}"></head>
+<body>
+<nav th:replace="~{fragments/layout :: nav}"></nav>
+<div class="container">
+    <div class="page-header">
+        <h1>Feature Flags</h1>
+        <a th:href="@{/dashboard/flags/new}" class="btn btn-primary">New Flag</a>
+    </div>
+
+    <div th:replace="~{fragments/flash :: messages}"></div>
+
+    <!-- Filters -->
+    <div class="card" style="padding: 1rem 1.5rem;">
+        <form th:action="@{/dashboard}" method="get" class="form-inline">
+            <div class="form-group">
+                <label for="search">Search</label>
+                <input type="text" id="search" name="search" th:value="${search}" placeholder="Key, name, or owner...">
+            </div>
+            <div class="form-group">
+                <label for="lifecycle">Lifecycle State</label>
+                <select id="lifecycle" name="lifecycle">
+                    <option value="">All</option>
+                    <option th:each="state : ${lifecycleStates}"
+                            th:value="${state.name()}"
+                            th:text="${state.name()}"
+                            th:selected="${state.name() == selectedLifecycle}">
+                    </option>
+                </select>
+            </div>
+            <div class="form-group">
+                <button type="submit" class="btn btn-primary">Filter</button>
+                <a th:href="@{/dashboard}" class="btn btn-secondary">Clear</a>
+            </div>
+        </form>
+    </div>
+
+    <!-- Flag Table -->
+    <div class="card">
+        <table th:if="${!flags.isEmpty()}">
+            <thead>
+            <tr>
+                <th>Key</th>
+                <th>Name</th>
+                <th>Owner</th>
+                <th>Lifecycle</th>
+                <th>Environments</th>
+                <th>Stale After</th>
+                <th>Updated</th>
+            </tr>
+            </thead>
+            <tbody>
+            <tr th:each="flag : ${flags}">
+                <td>
+                    <a th:href="@{/dashboard/flags/{key}(key=${flag.flagKey()})}"
+                       th:text="${flag.flagKey()}" style="color: #1a73e8; font-weight: 500;"></a>
+                </td>
+                <td th:text="${flag.name()}"></td>
+                <td th:text="${flag.owner()}"></td>
+                <td>
+                    <span class="badge"
+                          th:classappend="'badge-' + ${#strings.toLowerCase(flag.lifecycleState())}"
+                          th:text="${flag.lifecycleState()}"></span>
+                </td>
+                <td>
+                    <span th:each="env, stat : ${flag.environments()}">
+                        <span class="badge"
+                              th:classappend="${env.enabled()} ? 'badge-on' : 'badge-off'"
+                              th:text="${env.environment() + (env.enabled() ? ' ON' : ' OFF')}"></span>
+                        <span th:if="${!stat.last}">&nbsp;</span>
+                    </span>
+                    <span th:if="${flag.environments().isEmpty()}" class="timestamp">none</span>
+                </td>
+                <td th:text="${flag.staleAfterDays()} + 'd'"></td>
+                <td class="timestamp" th:text="${@fmt.shortInstant(flag.updatedAt())}"></td>
+            </tr>
+            </tbody>
+        </table>
+        <div th:if="${flags.isEmpty()}" class="empty-state">
+            <p>No flags found.</p>
+        </div>
+    </div>
+</div>
+</body>
+</html>

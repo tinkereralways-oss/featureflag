@@ -1,0 +1,69 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+
+<!-- Fragment: Environment toggle buttons -->
+<div th:fragment="environmentToggles(flag)">
+    <div class="card" th:if="${flag.lifecycleState() == 'ACTIVE'}">
+        <h2>Environment Toggles</h2>
+        <div th:if="${!flag.environments().isEmpty()}">
+            <div th:each="env : ${flag.environments()}" class="env-actions">
+                <span class="env-name" th:text="${env.environment()}"></span>
+                <span class="badge"
+                      th:classappend="${env.enabled()} ? 'badge-on' : 'badge-off'"
+                      th:text="${env.enabled()} ? 'ON' : 'OFF'"></span>
+                <form th:action="@{/dashboard/flags/{key}/environments/{env}/toggle(key=${flag.flagKey()}, env=${env.environment()})}"
+                      method="post" class="toggle-form">
+                    <input type="hidden" name="enabled" th:value="${!env.enabled()}" />
+                    <button type="submit"
+                            class="btn btn-sm toggle-btn"
+                            th:classappend="${env.enabled()} ? 'toggle-btn-off' : 'toggle-btn-on'"
+                            th:text="${env.enabled()} ? 'Turn OFF' : 'Turn ON'"></button>
+                </form>
+            </div>
+        </div>
+        <div th:if="${flag.environments().isEmpty()}" class="empty-state" style="padding: 1rem;">
+            <p>No environments to toggle. Add an environment first.</p>
+        </div>
+    </div>
+</div>
+
+<!-- Fragment: Add environment form -->
+<div th:fragment="addEnvironment(flag)"
+     th:if="${flag.lifecycleState() == 'ACTIVE' || flag.lifecycleState() == 'CREATED'}">
+    <div class="card">
+        <h2>Add Environment</h2>
+        <form th:action="@{/dashboard/flags/{key}/environments(key=${flag.flagKey()})}"
+              method="post" class="form-inline-sm">
+            <div class="form-group">
+                <input type="text" name="environment" placeholder="e.g. staging, canary"
+                       required minlength="1" maxlength="50" />
+            </div>
+            <button type="submit" class="btn btn-primary btn-sm">Add</button>
+        </form>
+    </div>
+</div>
+
+<!-- Fragment: Delete/Archive button -->
+<div th:fragment="deleteButton(flag)"
+     th:if="${flag.lifecycleState() != 'ARCHIVED'}">
+    <div class="card">
+        <h2>Danger Zone</h2>
+        <div style="display: flex; align-items: center; justify-content: space-between;">
+            <div>
+                <strong>Archive this flag</strong>
+                <p style="color: #888; font-size: 0.85rem; margin-top: 0.25rem;">
+                    This will transition the flag to ARCHIVED state. This action may not be reversible.
+                </p>
+            </div>
+            <form th:action="@{/dashboard/flags/{key}/delete(key=${flag.flagKey()})}"
+                  method="post">
+                <button type="submit" class="btn btn-danger"
+                        onclick="return confirm('Are you sure you want to archive this flag? This action may not be reversible.')">
+                    Archive Flag
+                </button>
+            </form>
+        </div>
+    </div>
+</div>
+
+</html>

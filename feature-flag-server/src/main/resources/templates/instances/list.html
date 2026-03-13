@@ -1,0 +1,52 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head th:replace="~{fragments/layout :: head('Instances - Feature Flag Dashboard')}"></head>
+<body>
+<nav th:replace="~{fragments/layout :: nav}"></nav>
+<div class="container">
+    <div class="page-header">
+        <h1>Instance Registry</h1>
+        <div>
+            <span class="badge badge-healthy" th:text="'Healthy: ' + ${healthyCount}"></span>
+            <span class="badge badge-off" th:text="'Total: ' + ${totalCount}" style="margin-left: 0.5rem;"></span>
+        </div>
+    </div>
+
+    <div class="card">
+        <table th:if="${!instances.isEmpty()}">
+            <thead>
+            <tr>
+                <th>Instance ID</th>
+                <th>Service</th>
+                <th>Host</th>
+                <th>Port</th>
+                <th>Health</th>
+                <th>SDK Version</th>
+                <th>Last Heartbeat</th>
+                <th>Registered</th>
+            </tr>
+            </thead>
+            <tbody>
+            <tr th:each="inst : ${instances}">
+                <td style="font-family: monospace; font-size: 0.8rem;" th:text="${inst.instanceId()}"></td>
+                <td th:text="${inst.serviceName()}" style="font-weight: 500;"></td>
+                <td th:text="${inst.hostAddress() ?: '-'}"></td>
+                <td th:text="${inst.port() ?: '-'}"></td>
+                <td>
+                    <span class="badge"
+                          th:classappend="'badge-' + ${#strings.toLowerCase(inst.healthStatus())}"
+                          th:text="${inst.healthStatus()}"></span>
+                </td>
+                <td th:text="${inst.sdkVersion() ?: '-'}"></td>
+                <td class="timestamp" th:text="${@fmt.instant(inst.lastHeartbeat())}"></td>
+                <td class="timestamp" th:text="${@fmt.instant(inst.registeredAt())}"></td>
+            </tr>
+            </tbody>
+        </table>
+        <div th:if="${instances.isEmpty()}" class="empty-state">
+            <p>No instances registered.</p>
+        </div>
+    </div>
+</div>
+</body>
+</html>
