@@ -107,7 +107,7 @@ public class TwoPhaseActivationService {
             return toResponse(activation);
         }
 
-        // Validate instance exists
+        // Validate instance exists in the registry before recording ACK
         if (!instanceRegistryRepository.existsById(instanceId)) {
             throw new InstanceNotFoundException(instanceId);
         }
