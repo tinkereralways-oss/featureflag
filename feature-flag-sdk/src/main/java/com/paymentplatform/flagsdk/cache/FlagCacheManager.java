@@ -4,11 +4,12 @@ import com.github.benmanes.caffeine.cache.Cache;
 import com.github.benmanes.caffeine.cache.Caffeine;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.stereotype.Component;
 
-import java.util.Collections;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 
+@Component
 public class FlagCacheManager {
 
     private static final Logger log = LoggerFactory.getLogger(FlagCacheManager.class);
@@ -61,6 +62,12 @@ public class FlagCacheManager {
     public void rollbackPending(String activationId, String flagKey, String environment) {
         String pendingKey = buildPendingKey(activationId, flagKey, environment);
         pendingStates.remove(pendingKey);
+        // FF-3 / INC-2025-014: also sweep any residual pending entries for the
+        // same (flagKey, environment) left behind by a prior activation whose
+        // rollback was missed. Without this, a later isEnabled-or-resync path
+        // that consults pendingStates would serve a stale value indefinitely.
+        String envSuffix = ":" + flagKey + ":" + environment;
+        pendingStates.keySet().removeIf(key -> key.endsWith(envSuffix));
         log.info("Rolled back activation {}: {}:{}", activationId, flagKey, environment);
     }
 
